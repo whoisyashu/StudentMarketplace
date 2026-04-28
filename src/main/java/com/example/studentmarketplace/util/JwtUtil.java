@@ -80,3 +80,4 @@ public class JwtUtil {
         }
     }
 }
+// this is jwt util file which is used to generate and validate jwt tokens for authentication and authorization in the application. It uses the jjwt library to handle JWT operations. The secret key and expiration time are configured through application properties.
