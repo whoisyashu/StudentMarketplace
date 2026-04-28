@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Product - Student Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .form-container {
+            max-width: 700px;
+            margin: 2rem auto;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        .image-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        .image-preview img {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo" onclick="location.href='/'">StudentMarketPlace</div>
+            <ul class="nav-links">
+                <li><a onclick="location.href='/'">Browse</a></li>
+                <li><a onclick="location.href='/pages/products.html'">My Listings</a></li>
+                <li><a onclick="location.href='/pages/chat.html'">Messages</a></li>
+                <li><a onclick="location.href='/pages/profile.html'">Profile</a></li>
+            </ul>
+            <div class="auth-buttons"></div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="form-container">
+            <div class="card">
+                <div class="card-header">Add New Product</div>
+                
+                <form id="addProductForm">
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="title">Product Title *</label>
+                            <input type="text" id="title" name="title" placeholder="e.g., Used iPhone 14" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="description">Description *</label>
+                            <textarea id="description" name="description" placeholder="Describe your product in detail..." required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price">Price (₹) *</label>
+                            <input type="number" id="price" name="price" placeholder="0.00" step="0.01" min="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Category *</label>
+                            <select id="category" name="category" required>
+                                <option value="">Select Category</option>
+                                <option value="books">Books</option>
+                                <option value="gadgets">Gadgets</option>
+                                <option value="electronics">Electronics</option>
+                                <option value="furniture">Furniture</option>
+                                <option value="clothing">Clothing</option>
+                                <option value="sports">Sports</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="condition">Condition *</label>
+                            <select id="condition" name="condition" required>
+                                <option value="">Select Condition</option>
+                                <option value="new">New</option>
+                                <option value="like-new">Like New</option>
+                                <option value="used">Used</option>
+                                <option value="refurbished">Refurbished</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="location">Location *</label>
+                            <input type="text" id="location" name="location" placeholder="e.g., Campus Building A" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="imageUrls">Image URLs (comma-separated)</label>
+                            <input type="text" id="imageUrls" name="imageUrls" placeholder="https://example.com/image1.jpg, https://example.com/image2.jpg">
+                        </div>
+                    </div>
+
+                    <div id="imagePreview" class="image-preview" style="display: none;"></div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="tags">Tags (comma-separated)</label>
+                            <input type="text" id="tags" name="tags" placeholder="e.g., textbook, college, bargain">
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="negotiable" name="negotiable">
+                                Price is negotiable
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary" onclick="location.href='/'">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Publish Product</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        // Check authentication
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!TokenManager.isAuthenticated()) {
+                UI.redirectTo('/pages/login.html');
+            }
+        });
+
+        // Preview images
+        document.getElementById('imageUrls').addEventListener('change', () => {
+            const urls = document.getElementById('imageUrls').value.split(',').map(u => u.trim()).filter(u => u);
+            const preview = document.getElementById('imagePreview');
+            
+            if (urls.length > 0) {
+                preview.style.display = 'grid';
+                preview.innerHTML = urls.map(url => `<img src="${url}" onerror="this.src='https://via.placeholder.com/100?text=Error'">`).join('');
+            } else {
+                preview.style.display = 'none';
+            }
+        });
+
+        // Handle form submission
+        document.getElementById('addProductForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const imageUrls = document.getElementById('imageUrls').value
+                .split(',')
+                .map(u => u.trim())
+                .filter(u => u);
+
+            const productData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                price: parseFloat(document.getElementById('price').value),
+                category: document.getElementById('category').value,
+                imageUrls: imageUrls.length > 0 ? imageUrls : ['https://via.placeholder.com/300x200?text=No+Image'],
+                condition: document.getElementById('condition').value,
+                location: document.getElementById('location').value,
+                negotiable: document.getElementById('negotiable').checked,
+                tags: document.getElementById('tags').value
+            };
+
+            try {
+                const response = await API.post('/products', productData);
+                UI.showAlert('Product published successfully! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/pages/products.html';
+                }, 2000);
+            } catch (error) {
+                UI.showAlert('Failed to publish product', 'error');
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>
