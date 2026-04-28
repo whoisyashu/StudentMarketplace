@@ -34,4 +34,3 @@ public class User {
     private double averageRating;
     private int totalReviews;
 }
-// This is user domain

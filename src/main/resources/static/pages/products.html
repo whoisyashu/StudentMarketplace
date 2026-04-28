@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Listings - Student Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .listings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+        .add-btn {
+            background-color: #27ae60;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .add-btn:hover {
+            background-color: #229954;
+        }
+        .listings-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background-color: #f0f0f0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            color: #333;
+        }
+        .tab-btn.active {
+            background-color: #667eea;
+            color: white;
+        }
+        .listing-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            gap: 1.5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            align-items: start;
+        }
+        .listing-image {
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            border-radius: 5px;
+            background-color: #f0f0f0;
+        }
+        .listing-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .listing-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+        }
+        .listing-meta {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+        .meta-label {
+            color: #999;
+            font-size: 0.85rem;
+        }
+        .meta-value {
+            font-weight: bold;
+            color: #333;
+        }
+        .listing-status {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+        }
+        .status-available {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .status-sold {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        .listing-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn-edit {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-edit:hover {
+            background-color: #2980b9;
+        }
+        .btn-mark-sold {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .btn-mark-sold:hover {
+            background-color: #c0392b;
+        }
+        .btn-delete {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .btn-delete:hover {
+            background-color: #7f8c8d;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #999;
+        }
+        .empty-state img {
+            width: 100px;
+            opacity: 0.5;
+            margin-bottom: 1rem;
+        }
+        .empty-state p {
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+        @media (max-width: 768px) {
+            .listing-item {
+                grid-template-columns: 100px 1fr;
+            }
+            .listing-image {
+                width: 100px;
+                height: 100px;
+            }
+            .listing-meta {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo" onclick="location.href='/'">StudentMarketPlace</div>
+            <ul class="nav-links">
+                <li><a onclick="location.href='/'">Browse</a></li>
+                <li><a onclick="location.href='/pages/products.html'">My Listings</a></li>
+                <li><a onclick="location.href='/pages/chat.html'">Messages</a></li>
+                <li><a onclick="location.href='/pages/profile.html'">Profile</a></li>
+            </ul>
+            <div class="auth-buttons"></div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="listings-header">
+            <h2>My Listings</h2>
+            <a href="/pages/add-product.html" class="add-btn">+ Add New Product</a>
+        </div>
+
+        <div class="listings-tabs">
+            <button class="tab-btn active" onclick="filterListings('available')">Active (0)</button>
+            <button class="tab-btn" onclick="filterListings('sold')">Sold (0)</button>
+            <button class="tab-btn" onclick="filterListings('all')">All (0)</button>
+        </div>
+
+        <div id="listingsContainer">
+            <div class="empty-state">
+                <p>Loading your listings...</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        let allListings = [];
+        let currentFilter = 'available';
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!TokenManager.isAuthenticated()) {
+                UI.redirectTo('/pages/login.html');
+                return;
+            }
+
+            await loadListings();
+        });
+
+        async function loadListings() {
+            try {
+                const userId = TokenManager.getUserId();
+                allListings = await API.get(`/products/seller/${userId}`);
+                updateCounts();
+                renderListings();
+            } catch (error) {
+                UI.showAlert('Failed to load listings', 'error');
+                console.error(error);
+            }
+        }
+
+        function updateCounts() {
+            const availableCount = allListings.filter(p => p.status === 'available').length;
+            const soldCount = allListings.filter(p => p.status === 'sold').length;
+            
+            document.querySelector('button[onclick="filterListings(\'available\')"]').textContent = `Active (${availableCount})`;
+            document.querySelector('button[onclick="filterListings(\'sold\')"]').textContent = `Sold (${soldCount})`;
+            document.querySelector('button[onclick="filterListings(\'all\')"]').textContent = `All (${allListings.length})`;
+        }
+
+        function filterListings(filter) {
+            currentFilter = filter;
+            
+            // Update active tab
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            renderListings();
+        }
+
+        function renderListings() {
+            let filtered = allListings;
+            
+            if (currentFilter === 'available') {
+                filtered = allListings.filter(p => p.status === 'available');
+            } else if (currentFilter === 'sold') {
+                filtered = allListings.filter(p => p.status === 'sold');
+            }
+
+            const container = document.getElementById('listingsContainer');
+            
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <p>No ${currentFilter === 'all' ? '' : currentFilter} listings yet</p>
+                        <a href="/pages/add-product.html" class="add-btn">Start Selling</a>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(product => `
+                <div class="listing-item">
+                    <img src="${product.imageUrls?.[0] || 'https://via.placeholder.com/150x150?text=No+Image'}" alt="${product.title}" class="listing-image">
+                    <div class="listing-info">
+                        <div class="listing-title">${product.title}</div>
+                        
+                        <div class="listing-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Price</span>
+                                <span class="meta-value">₹${product.price.toFixed(2)}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Category</span>
+                                <span class="meta-value">${product.category}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Status</span>
+                                <span class="listing-status status-${product.status}">${product.status}</span>
+                            </div>
+                        </div>
+
+                        <div class="listing-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Views</span>
+                                <span class="meta-value">${product.views}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Posted</span>
+                                <span class="meta-value">${new Date(product.createdAt).toLocaleDateString()}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Condition</span>
+                                <span class="meta-value">${product.condition}</span>
+                            </div>
+                        </div>
+
+                        <div class="listing-actions">
+                            <button class="action-btn btn-edit" onclick="editListing('${product.id}')">Edit</button>
+                            ${product.status === 'available' ? `<button class="action-btn btn-mark-sold" onclick="markAsSold('${product.id}')">Mark Sold</button>` : ''}
+                            <button class="action-btn btn-delete" onclick="deleteListing('${product.id}')">Delete</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editListing(productId) {
+            // TODO: Implement edit functionality
+            UI.showAlert('Edit feature coming soon!', 'error');
+        }
+
+        async function markAsSold(productId) {
+            if (!confirm('Mark this product as sold?')) return;
+
+            try {
+                await API.put(`/products/${productId}/sold`, {});
+                UI.showAlert('Product marked as sold!', 'success');
+                await loadListings();
+            } catch (error) {
+                UI.showAlert('Failed to mark as sold', 'error');
+                console.error(error);
+            }
+        }
+
+        async function deleteListing(productId) {
+            if (!confirm('Delete this listing? This action cannot be undone.')) return;
+
+            try {
+                await API.delete(`/products/${productId}`);
+                UI.showAlert('Listing deleted!', 'success');
+                await loadListings();
+            } catch (error) {
+                UI.showAlert('Failed to delete listing', 'error');
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>

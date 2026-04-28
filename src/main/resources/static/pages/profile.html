@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Student Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .profile-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .profile-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .profile-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .profile-picture {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin: 0 auto 1rem;
+        }
+        .profile-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .profile-college {
+            color: #666;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+        .profile-rating {
+            color: #f39c12;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .stat-item {
+            padding: 1rem;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        .profile-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 1.5rem;
+        }
+        .tab-button {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+        .btn-save {
+            background-color: #667eea;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            margin-top: 1rem;
+        }
+        .btn-save:hover {
+            background-color: #5568d3;
+        }
+        .btn-logout {
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.75rem 2rem;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 1rem;
+            width: 100%;
+        }
+        .btn-logout:hover {
+            background-color: #c0392b;
+        }
+        .read-only {
+            background-color: #f9f9f9;
+            padding: 0.75rem;
+            border-radius: 5px;
+        }
+        @media (max-width: 768px) {
+            .profile-container {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo" onclick="location.href='/'">StudentMarketPlace</div>
+            <ul class="nav-links">
+                <li><a onclick="location.href='/'">Browse</a></li>
+                <li><a onclick="location.href='/pages/products.html'">My Listings</a></li>
+                <li><a onclick="location.href='/pages/chat.html'">Messages</a></li>
+                <li><a onclick="location.href='/pages/profile.html'">Profile</a></li>
+            </ul>
+            <div class="auth-buttons"></div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2 style="margin-top: 2rem;">My Profile</h2>
+
+        <div class="profile-container">
+            <!-- Sidebar -->
+            <div class="profile-sidebar">
+                <div class="profile-card">
+                    <div class="profile-picture" id="profilePic">👤</div>
+                    <div class="profile-name" id="profileName">Loading...</div>
+                    <div class="profile-college" id="profileCollege">-</div>
+                    <div class="profile-rating" id="profileRating">★★★★★</div>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-value" id="productCount">0</div>
+                            <div class="stat-label">Products Sold</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="reviewCount">0</div>
+                            <div class="stat-label">Reviews</div>
+                        </div>
+                    </div>
+
+                    <button class="btn-logout" onclick="logout()">Logout</button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="profile-content">
+                <div class="tabs">
+                    <button class="tab-button active" onclick="switchTab('about')">About</button>
+                    <button class="tab-button" onclick="switchTab('settings')">Settings</button>
+                    <button class="tab-button" onclick="switchTab('security')">Security</button>
+                </div>
+
+                <!-- About Tab -->
+                <div id="about" class="tab-content active">
+                    <h3>Personal Information</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>First Name</label>
+                            <div class="read-only" id="firstName">-</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Last Name</label>
+                            <div class="read-only" id="lastName">-</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label>Email</label>
+                            <div class="read-only" id="email">-</div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>College</label>
+                            <div class="read-only" id="college">-</div>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Number</label>
+                            <div class="read-only" id="contactNumber">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settings" class="tab-content">
+                    <h3>Profile Settings</h3>
+                    
+                    <form id="settingsForm">
+                        <div class="form-group">
+                            <label for="bio">Bio</label>
+                            <textarea id="bio" placeholder="Tell us about yourself..." style="min-height: 80px;"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="profilePictureUrl">Profile Picture URL</label>
+                            <input type="url" id="profilePictureUrl" placeholder="https://example.com/image.jpg">
+                        </div>
+
+                        <button type="submit" class="btn-save">Save Changes</button>
+                    </form>
+                </div>
+
+                <!-- Security Tab -->
+                <div id="security" class="tab-content">
+                    <h3>Security Settings</h3>
+                    
+                    <div class="card">
+                        <div class="card-header">Change Password</div>
+                        <form id="passwordForm">
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password</label>
+                                <input type="password" id="currentPassword" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="newPassword">New Password</label>
+                                <input type="password" id="newPassword" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm Password</label>
+                                <input type="password" id="confirmPassword" required>
+                            </div>
+
+                            <button type="button" class="btn-save" onclick="changePassword()" style="background-color: #f39c12;">Update Password</button>
+                        </form>
+                    </div>
+
+                    <div class="card" style="margin-top: 1.5rem; border: 2px solid #e74c3c;">
+                        <div class="card-header" style="color: #e74c3c;">Danger Zone</div>
+                        <p style="color: #666; margin-top: 1rem;">
+                            Deleting your account will permanently remove all your data and cannot be undone.
+                        </p>
+                        <button type="button" class="btn-logout" style="margin-top: 0;" onclick="deleteAccount()">Delete Account</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!TokenManager.isAuthenticated()) {
+                UI.redirectTo('/pages/login.html');
+                return;
+            }
+
+            await loadProfile();
+        });
+
+        async function loadProfile() {
+            try {
+                const profile = await API.get('/users/profile');
+                
+                // Populate profile info
+                document.getElementById('profileName').textContent = profile.firstName + ' ' + profile.lastName;
+                document.getElementById('profileCollege').textContent = profile.college;
+                document.getElementById('firstName').textContent = profile.firstName;
+                document.getElementById('lastName').textContent = profile.lastName;
+                document.getElementById('email').textContent = profile.email;
+                document.getElementById('college').textContent = profile.college;
+                document.getElementById('contactNumber').textContent = profile.contactNumber || 'Not provided';
+                
+                // Rating
+                const rating = Math.round(profile.averageRating || 0);
+                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                document.getElementById('profileRating').innerHTML = `${stars} <span style="font-size: 0.9rem; color: #666;">(${profile.totalReviews} reviews)</span>`;
+                
+                // Stats
+                document.getElementById('reviewCount').textContent = profile.totalReviews || 0;
+                
+                // Bio and profile picture
+                document.getElementById('bio').value = profile.bio || '';
+                document.getElementById('profilePictureUrl').value = profile.profilePictureUrl || '';
+                
+                // Profile picture initial
+                if (profile.profilePictureUrl) {
+                    document.getElementById('profilePic').style.backgroundImage = `url('${profile.profilePictureUrl}')`;
+                    document.getElementById('profilePic').textContent = '';
+                } else {
+                    document.getElementById('profilePic').textContent = profile.firstName.charAt(0).toUpperCase();
+                }
+            } catch (error) {
+                UI.showAlert('Failed to load profile', 'error');
+                console.error(error);
+            }
+        }
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            try {
+                const bio = document.getElementById('bio').value;
+                const profilePictureUrl = document.getElementById('profilePictureUrl').value;
+
+                await API.put('/users/profile', {
+                    bio,
+                    profilePictureUrl
+                });
+
+                UI.showAlert('Profile updated successfully!', 'success');
+                await loadProfile();
+            } catch (error) {
+                UI.showAlert('Failed to update profile', 'error');
+                console.error(error);
+            }
+        });
+
+        function changePassword() {
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (newPassword !== confirmPassword) {
+                UI.showAlert('Passwords do not match', 'error');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                UI.showAlert('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            // Note: This would require a backend endpoint to change password
+            UI.showAlert('Password change not yet implemented. Please contact support.', 'error');
+        }
+
+        function deleteAccount() {
+            const confirmed = confirm('Are you sure? This action cannot be undone. Type DELETE to confirm.');
+            if (!confirmed) return;
+
+            const input = prompt('Type DELETE to confirm account deletion:');
+            if (input === 'DELETE') {
+                // Note: This would require a backend endpoint to delete account
+                UI.showAlert('Account deletion not yet implemented. Please contact support.', 'error');
+            } else {
+                UI.showAlert('Account deletion cancelled', 'error');
+            }
+        }
+
+        function logout() {
+            if (confirm('Are you sure you want to logout?')) {
+                Auth.logout();
+            }
+        }
+    </script>
+</body>
+</html>

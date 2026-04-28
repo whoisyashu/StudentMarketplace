@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Student Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">StudentMarketPlace</div>
+            <div class="auth-buttons"></div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <div class="auth-container">
+            <div class="auth-card">
+                <h2 class="auth-title">Create Account</h2>
+                    <p style="text-align: center; color: var(--muted); margin-bottom: 1.5rem; font-size: 0.95rem;">Join our student community and start buying or selling</p>
+                <form id="registerForm">
+                        <div class="form-row" style="margin-bottom: 1.75rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                        <label for="firstName">First Name</label>
+                            <input type="text" id="firstName" name="firstName" placeholder="John" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                            <label for="lastName">Last Name</label>
+                            <input type="text" id="lastName" name="lastName" placeholder="Doe" required>
+                            </div>
+                        </div>
+
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="student@college.edu" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="college">College</label>
+                            <input type="text" id="college" name="college" placeholder="Your College Name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="contactNumber">Contact Number</label>
+                            <input type="tel" id="contactNumber" name="contactNumber" placeholder="+91 99999 99999" required>
+                    </div>
+
+                        <div class="form-row" style="margin-bottom: 1.75rem;">
+                            <div class="form-group" style="margin-bottom: 0;">
+                        <label for="password">Password</label>
+                            <input type="password" id="password" name="password" placeholder="••••••••••" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0;">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="••••••••••" required>
+                            </div>
+                        </div>
+
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">Create Account</button>
+                </form>
+
+                <div class="auth-link">
+                        Already have an account? <a href="/pages/login.html">Sign in now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const firstName = document.getElementById('firstName').value;
+            const lastName = document.getElementById('lastName').value;
+            const email = document.getElementById('email').value;
+            const college = document.getElementById('college').value;
+            const contactNumber = document.getElementById('contactNumber').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (password !== confirmPassword) {
+                UI.showAlert('Passwords do not match', 'error');
+                return;
+            }
+
+            try {
+                await Auth.register({
+                    firstName,
+                    lastName,
+                    email,
+                    college,
+                    contactNumber,
+                    password
+                });
+            } catch (error) {
+                console.error('Register error:', error);
+            }
+        });
+    </script>
+</body>
+</html>
