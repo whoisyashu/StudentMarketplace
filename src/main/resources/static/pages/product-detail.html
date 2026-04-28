@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Details - Student Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .product-detail-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        .product-images {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .main-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            border-radius: 8px;
+            background-color: #f0f0f0;
+        }
+        .thumbnail-images {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .thumbnail {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color 0.3s;
+        }
+        .thumbnail.active {
+            border-color: #667eea;
+        }
+        .product-info {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .price-section {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1.5rem;
+        }
+        .price-tag {
+            font-size: 2rem;
+            color: #667eea;
+            font-weight: bold;
+        }
+        .condition-badge {
+            display: inline-block;
+            background-color: #e0e0e0;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+        .seller-card {
+            background-color: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        .seller-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+        .seller-rating {
+            color: #f39c12;
+            margin-bottom: 0.5rem;
+        }
+        .seller-college {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .contact-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+        .contact-btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        .contact-btn-message {
+            background-color: #667eea;
+            color: white;
+        }
+        .contact-btn-message:hover {
+            background-color: #5568d3;
+        }
+        .contact-btn-call {
+            background-color: #27ae60;
+            color: white;
+        }
+        .contact-btn-call:hover {
+            background-color: #229954;
+        }
+        .info-item {
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        .info-value {
+            font-weight: bold;
+            color: #333;
+            margin-top: 0.25rem;
+        }
+        .message-input {
+            display: flex;
+            gap: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #eee;
+        }
+        .message-input input {
+            flex: 1;
+            margin: 0;
+        }
+        .message-input button {
+            padding: 0.75rem 1rem;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .product-detail-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo" onclick="location.href='/'">StudentMarketPlace</div>
+            <ul class="nav-links">
+                <li><a onclick="location.href='/'">Browse</a></li>
+                <li><a onclick="location.href='/pages/products.html'">My Listings</a></li>
+                <li><a onclick="location.href='/pages/chat.html'">Messages</a></li>
+                <li><a onclick="location.href='/pages/profile.html'">Profile</a></li>
+            </ul>
+            <div class="auth-buttons"></div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <button class="btn btn-secondary" onclick="history.back()" style="margin-bottom: 1.5rem;">← Back</button>
+
+        <div class="product-detail-container">
+            <div class="product-images">
+                <img id="mainImage" class="main-image" src="https://via.placeholder.com/400x400?text=Product+Image" alt="Product">
+                <div class="thumbnail-images" id="thumbnails"></div>
+            </div>
+
+            <div class="product-info">
+                <div>
+                    <h2 id="productTitle">Product Title</h2>
+                </div>
+
+                <div class="price-section">
+                    <div class="price-tag" id="productPrice">₹0.00</div>
+                    <div class="condition-badge" id="condition">Condition</div>
+                    <div id="negotiable" style="color: #27ae60; margin-top: 0.5rem; display: none;">✓ Price negotiable</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Category</div>
+                    <div class="info-value" id="category">-</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Location</div>
+                    <div class="info-value" id="location">-</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Posted</div>
+                    <div class="info-value" id="createdAt">-</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Views</div>
+                    <div class="info-value" id="views">-</div>
+                </div>
+
+                <div class="info-item">
+                    <div class="info-label">Description</div>
+                    <div class="info-value" style="font-weight: normal; margin-top: 0.5rem;" id="description">-</div>
+                </div>
+
+                <div class="seller-card">
+                    <div class="seller-name" id="sellerName">Seller Name</div>
+                    <div class="seller-rating">
+                        <span id="rating">★★★★★</span>
+                        <span id="totalReviews">(0 reviews)</span>
+                    </div>
+                    <div class="seller-college" id="sellerCollege">College</div>
+
+                    <div class="contact-section">
+                        <button class="contact-btn contact-btn-message" onclick="sendMessage()">
+                            💬 Send Message
+                        </button>
+                        <button class="contact-btn contact-btn-call" onclick="callSeller()">
+                            📞 Call Seller
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Message Modal -->
+        <div id="messageModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+            <div class="card" style="max-width: 400px; width: 90%;">
+                <div class="card-header">Send Message to <span id="modalSellerName">Seller</span></div>
+                <form id="messageForm" onsubmit="submitMessage(event)">
+                    <div class="form-group">
+                        <label for="messageContent">Your Message</label>
+                        <textarea id="messageContent" placeholder="I'm interested in this product..." required style="min-height: 100px;"></textarea>
+                    </div>
+                    <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                        <button type="button" class="btn btn-secondary" onclick="closeMessageModal()">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        let productId = new URLSearchParams(window.location.search).get('id');
+        let sellerData = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!TokenManager.isAuthenticated()) {
+                UI.redirectTo('/pages/login.html');
+                return;
+            }
+
+            if (!productId) {
+                UI.showAlert('Product not found', 'error');
+                setTimeout(() => location.href = '/', 2000);
+                return;
+            }
+
+            await loadProduct();
+        });
+
+        async function loadProduct() {
+            try {
+                const product = await API.get(`/products/${productId}`);
+                
+                // Populate product details
+                document.getElementById('productTitle').textContent = product.title;
+                document.getElementById('productPrice').textContent = '₹' + product.price.toFixed(2);
+                document.getElementById('condition').textContent = product.condition.charAt(0).toUpperCase() + product.condition.slice(1);
+                document.getElementById('category').textContent = product.category;
+                document.getElementById('location').textContent = product.location;
+                document.getElementById('description').textContent = product.description;
+                document.getElementById('views').textContent = product.views;
+                document.getElementById('createdAt').textContent = new Date(product.createdAt).toLocaleDateString();
+                
+                if (product.negotiable) {
+                    document.getElementById('negotiable').style.display = 'block';
+                }
+
+                // Load seller info
+                const seller = await API.get(`/users/${product.sellerId}`);
+                sellerData = seller;
+                document.getElementById('sellerName').textContent = seller.firstName + ' ' + seller.lastName;
+                document.getElementById('sellerCollege').textContent = '📚 ' + seller.college;
+                document.getElementById('modalSellerName').textContent = seller.firstName + ' ' + seller.lastName;
+                
+                // Rating
+                const rating = Math.round(seller.averageRating || 0);
+                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
+                document.getElementById('rating').textContent = stars;
+                document.getElementById('totalReviews').textContent = `(${seller.totalReviews} reviews)`;
+
+                // Images
+                const images = product.imageUrls && product.imageUrls.length > 0 
+                    ? product.imageUrls 
+                    : ['https://via.placeholder.com/400x400?text=No+Image'];
+                
+                document.getElementById('mainImage').src = images[0];
+
+                if (images.length > 1) {
+                    const thumbnailsContainer = document.getElementById('thumbnails');
+                    thumbnailsContainer.innerHTML = images.map((img, idx) => 
+                        `<img class="thumbnail ${idx === 0 ? 'active' : ''}" src="${img}" 
+                         onclick="changeImage(this, '${img}')" alt="Thumbnail ${idx + 1}">`
+                    ).join('');
+                }
+            } catch (error) {
+                UI.showAlert('Failed to load product details', 'error');
+                console.error(error);
+            }
+        }
+
+        function changeImage(element, imageSrc) {
+            document.getElementById('mainImage').src = imageSrc;
+            document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function sendMessage() {
+            document.getElementById('messageModal').style.display = 'flex';
+            document.getElementById('messageContent').focus();
+        }
+
+        function closeMessageModal() {
+            document.getElementById('messageModal').style.display = 'none';
+            document.getElementById('messageForm').reset();
+        }
+
+        async function submitMessage(event) {
+            event.preventDefault();
+            
+            const messageContent = document.getElementById('messageContent').value;
+            
+            try {
+                await API.post('/messages/send', {
+                    receiverId: sellerData.id,
+                    content: messageContent,
+                    messageType: 'text',
+                    productId: productId
+                });
+                
+                UI.showAlert('Message sent! Check your conversations.', 'success');
+                closeMessageModal();
+                setTimeout(() => location.href = '/pages/chat.html', 2000);
+            } catch (error) {
+                UI.showAlert('Failed to send message', 'error');
+                console.error(error);
+            }
+        }
+
+        function callSeller() {
+            const phone = sellerData.contactNumber;
+            if (phone) {
+                window.location.href = `tel:${phone}`;
+            } else {
+                UI.showAlert('Seller phone number not available', 'error');
+            }
+        }
+    </script>
+</body>
+</html>
