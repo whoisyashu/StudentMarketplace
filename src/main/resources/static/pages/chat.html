@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Messages - Student Marketplace</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .chat-wrapper {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 1rem;
+            height: 650px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-top: 2rem;
+        }
+        .conversations-sidebar {
+            border-right: 1px solid #ddd;
+            overflow-y: auto;
+            background-color: #f9f9f9;
+        }
+        .conversation-item {
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            position: relative;
+        }
+        .conversation-item:hover {
+            background-color: #f0f0f0;
+        }
+        .conversation-item.active {
+            background-color: #e8f0ff;
+            border-left: 4px solid #667eea;
+            padding-left: calc(1rem - 4px);
+        }
+        .conversation-name {
+            font-weight: bold;
+            margin-bottom: 0.25rem;
+        }
+        .conversation-preview {
+            font-size: 0.85rem;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .conversation-time {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+        .unread-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: #667eea;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .messages-container {
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid #ddd;
+            background-color: #f9f9f9;
+        }
+        .chat-header-name {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .messages-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .message {
+            display: flex;
+            margin-bottom: 0.5rem;
+        }
+        .message.sent {
+            justify-content: flex-end;
+        }
+        .message-content {
+            max-width: 70%;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            word-wrap: break-word;
+            font-size: 0.95rem;
+        }
+        .message.received .message-content {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+        .message.sent .message-content {
+            background-color: #667eea;
+            color: white;
+        }
+        .message-time {
+            font-size: 0.75rem;
+            color: #999;
+            margin-top: 0.25rem;
+        }
+        .input-area {
+            padding: 1rem;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 0.5rem;
+        }
+        .input-area input {
+            flex: 1;
+            margin: 0;
+            padding: 0.75rem;
+        }
+        .input-area button {
+            padding: 0.75rem 1.5rem;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        .input-area button:hover {
+            background-color: #5568d3;
+        }
+        .no-selection {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #999;
+            font-size: 1.1rem;
+        }
+        @media (max-width: 768px) {
+            .chat-wrapper {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .conversations-sidebar {
+                border-right: none;
+                border-bottom: 1px solid #ddd;
+                max-height: 200px;
+            }
+            .message-content {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo" onclick="location.href='/'">StudentMarketPlace</div>
+            <ul class="nav-links">
+                <li><a onclick="location.href='/'">Browse</a></li>
+                <li><a onclick="location.href='/pages/products.html'">My Listings</a></li>
+                <li><a onclick="location.href='/pages/chat.html'">Messages</a></li>
+                <li><a onclick="location.href='/pages/profile.html'">Profile</a></li>
+            </ul>
+            <div class="auth-buttons"></div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <h2 style="margin-top: 2rem;">Messages</h2>
+        
+        <div class="chat-wrapper">
+            <!-- Conversations List -->
+            <div class="conversations-sidebar">
+                <div style="padding: 1rem; border-bottom: 1px solid #ddd; font-weight: bold;">Conversations</div>
+                <div id="conversationsList">
+                    <div style="padding: 1rem; text-align: center; color: #999;">Loading conversations...</div>
+                </div>
+            </div>
+
+            <!-- Chat Area -->
+            <div class="messages-container">
+                <div class="chat-header">
+                    <div class="chat-header-name" id="chatHeaderName">Select a conversation</div>
+                </div>
+
+                <div class="messages-area" id="messagesArea">
+                    <div class="no-selection">Select a conversation to view messages</div>
+                </div>
+
+                <div class="input-area" id="inputArea" style="display: none;">
+                    <input type="text" id="messageInput" placeholder="Type your message..." autocomplete="off">
+                    <button onclick="sendMessage()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/api.js"></script>
+    <script>
+        let currentConversation = null;
+        let conversations = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!TokenManager.isAuthenticated()) {
+                UI.redirectTo('/pages/login.html');
+                return;
+            }
+
+            await loadConversations();
+            
+            // Allow sending message with Enter key
+            document.getElementById('messageInput').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        });
+
+        async function loadConversations() {
+            try {
+                conversations = await API.get('/messages/conversations');
+                renderConversations();
+            } catch (error) {
+                UI.showAlert('Failed to load conversations', 'error');
+                console.error(error);
+            }
+        }
+
+        function renderConversations() {
+            const container = document.getElementById('conversationsList');
+            
+            if (conversations.length === 0) {
+                container.innerHTML = '<div style="padding: 1rem; text-align: center; color: #999;">No conversations yet</div>';
+                return;
+            }
+
+            container.innerHTML = conversations.map(conv => `
+                <div class="conversation-item ${currentConversation?.id === conv.id ? 'active' : ''}" 
+                     onclick="selectConversation(${JSON.stringify(conv).replace(/"/g, '&quot;')})">
+                    <div class="conversation-name" id="convName-${conv.id}">
+                        ${getOtherUserName(conv)}
+                    </div>
+                    <div class="conversation-preview">${conv.lastMessage || 'No messages yet'}</div>
+                    <div class="conversation-time">${new Date(conv.lastMessageAt).toLocaleDateString()}</div>
+                </div>
+            `).join('');
+        }
+
+        function getOtherUserName(conv) {
+            const userId = TokenManager.getUserId();
+            const otherUserId = conv.userId1 === userId ? conv.userId2 : conv.userId1;
+            // This would need API call to get user details - for now use ID
+            return `User ${otherUserId.substring(0, 8)}...`;
+        }
+
+        async function selectConversation(conv) {
+            currentConversation = conv;
+            document.getElementById('chatHeaderName').textContent = getOtherUserName(conv);
+            document.getElementById('inputArea').style.display = 'flex';
+            document.getElementById('messageInput').focus();
+            
+            await loadMessages();
+            renderConversations(); // Refresh to show active state
+        }
+
+        async function loadMessages() {
+            if (!currentConversation) return;
+
+            try {
+                const messages = await API.get(`/messages/conversation/${currentConversation.id}`);
+                renderMessages(messages);
+                
+                // Scroll to bottom
+                setTimeout(() => {
+                    const messagesArea = document.getElementById('messagesArea');
+                    messagesArea.scrollTop = messagesArea.scrollHeight;
+                }, 100);
+            } catch (error) {
+                console.error('Failed to load messages:', error);
+            }
+        }
+
+        function renderMessages(messages) {
+            const userId = TokenManager.getUserId();
+            const messagesArea = document.getElementById('messagesArea');
+            
+            if (!messages || messages.length === 0) {
+                messagesArea.innerHTML = '<div style="text-align: center; color: #999; margin: auto;">No messages yet. Start the conversation!</div>';
+                return;
+            }
+
+            messagesArea.innerHTML = messages.map(msg => `
+                <div class="message ${msg.senderId === userId ? 'sent' : 'received'}">
+                    <div>
+                        <div class="message-content">${escapeHtml(msg.content)}</div>
+                        <div class="message-time" style="text-align: ${msg.senderId === userId ? 'right' : 'left'};">
+                            ${new Date(msg.sentAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        async function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const content = input.value.trim();
+
+            if (!content || !currentConversation) {
+                UI.showAlert('Please select a conversation and type a message', 'error');
+                return;
+            }
+
+            try {
+                await API.post('/messages/send', {
+                    receiverId: currentConversation.userId1 === TokenManager.getUserId() 
+                        ? currentConversation.userId2 
+                        : currentConversation.userId1,
+                    content: content,
+                    messageType: 'text'
+                });
+
+                input.value = '';
+                await loadMessages();
+            } catch (error) {
+                UI.showAlert('Failed to send message', 'error');
+                console.error(error);
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>
