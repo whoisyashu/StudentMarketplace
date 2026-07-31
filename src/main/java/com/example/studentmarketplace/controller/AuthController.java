@@ -4,8 +4,7 @@ import com.example.studentmarketplace.dto.AuthResponse;
 import com.example.studentmarketplace.dto.LoginRequest;
 import com.example.studentmarketplace.dto.RegisterRequest;
 import com.example.studentmarketplace.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,35 +12,28 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public AuthController(UserService userService) {
+        this.userService = userService;
+    }
 
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@RequestBody RegisterRequest request) {
-        try {
-            AuthResponse response = userService.register(request);
-            return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(AuthResponse.builder()
-                    .message(e.getMessage())
-                    .build());
-        }
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
+        AuthResponse response = userService.register(request);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
-        try {
-            AuthResponse response = userService.login(request);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(AuthResponse.builder()
-                    .message(e.getMessage())
-                    .build());
-        }
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        AuthResponse response = userService.login(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/verify")
-    public ResponseEntity<String> verifyToken() {
-        return ResponseEntity.ok("Token is valid");
+    public ResponseEntity<AuthResponse> verifyToken() {
+        return ResponseEntity.ok(AuthResponse.builder()
+                .message("Token is valid")
+                .build());
     }
 }

@@ -1,8 +1,9 @@
 package com.example.studentmarketplace.controller;
 
-import com.example.studentmarketplace.domain.User;
+import com.example.studentmarketplace.dto.UserProfileResponse;
+import com.example.studentmarketplace.dto.UserProfileUpdateRequest;
 import com.example.studentmarketplace.service.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -11,28 +12,31 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/users")
 public class UserProfileController {
 
-    @Autowired
-    private UserService userService;
+    private final UserService userService;
+
+    public UserProfileController(UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping("/profile")
-    public ResponseEntity<User> getProfile(Authentication authentication) {
+    public ResponseEntity<UserProfileResponse> getProfile(Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
-        User user = userService.getUserById(userId);
+        UserProfileResponse user = userService.getUserProfileById(userId);
         return ResponseEntity.ok(user);
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<User> getUserById(@PathVariable String userId) {
-        User user = userService.getUserById(userId);
+    public ResponseEntity<UserProfileResponse> getUserById(@PathVariable String userId) {
+        UserProfileResponse user = userService.getUserProfileById(userId);
         return ResponseEntity.ok(user);
     }
 
     @PutMapping("/profile")
-    public ResponseEntity<User> updateProfile(
-            @RequestBody User updatedUser,
+    public ResponseEntity<UserProfileResponse> updateProfile(
+            @Valid @RequestBody UserProfileUpdateRequest updatedUser,
             Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
-        User user = userService.updateProfile(userId, updatedUser);
+        UserProfileResponse user = userService.updateProfile(userId, updatedUser);
         return ResponseEntity.ok(user);
     }
 }

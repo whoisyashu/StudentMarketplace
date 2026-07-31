@@ -4,11 +4,12 @@ import com.example.studentmarketplace.domain.Product;
 import com.example.studentmarketplace.dto.ProductRequest;
 import com.example.studentmarketplace.dto.ProductResponse;
 import com.example.studentmarketplace.service.ProductService;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -20,16 +21,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/products")
 public class ProductController {
 
-    @Autowired
-    private ProductService productService;
+    private final ProductService productService;
+
+    public ProductController(ProductService productService) {
+        this.productService = productService;
+    }
 
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(
-            @RequestBody ProductRequest request,
+            @Valid @RequestBody ProductRequest request,
             Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
         Product product = productService.createProduct(userId, request);
-        return ResponseEntity.ok(productService.convertToResponse(product));
+        return ResponseEntity.status(HttpStatus.CREATED).body(productService.convertToResponse(product));
     }
 
     @GetMapping("/{id}")
@@ -41,7 +45,7 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<ProductResponse> updateProduct(
             @PathVariable String id,
-            @RequestBody ProductRequest request,
+            @Valid @RequestBody ProductRequest request,
             Authentication authentication) {
         String userId = (String) authentication.getPrincipal();
         Product product = productService.updateProduct(id, userId, request);
@@ -102,6 +106,9 @@ public class ProductController {
             @RequestParam double maxPrice,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
+        if (minPrice > maxPrice) {
+            throw new IllegalArgumentException("Minimum price cannot be greater than maximum price");
+        }
         Pageable pageable = PageRequest.of(page, size);
         Page<Product> products = productService.filterByPriceRange(minPrice, maxPrice, pageable);
         return ResponseEntity.ok(products.map(productService::convertToResponse));

@@ -35,6 +35,8 @@
             justify-content: center;
             font-size: 3rem;
             margin: 0 auto 1rem;
+            background-size: cover;
+            background-position: center;
         }
         .profile-name {
             font-size: 1.3rem;
@@ -84,6 +86,7 @@
             gap: 1rem;
             border-bottom: 2px solid #eee;
             margin-bottom: 1.5rem;
+            flex-wrap: wrap;
         }
         .tab-button {
             padding: 0.75rem 1.5rem;
@@ -104,9 +107,6 @@
         }
         .tab-content.active {
             display: block;
-        }
-        .form-group {
-            margin-bottom: 1.5rem;
         }
         .form-row {
             display: grid;
@@ -141,9 +141,6 @@
             margin-top: 1rem;
             width: 100%;
         }
-        .btn-logout:hover {
-            background-color: #c0392b;
-        }
         .read-only {
             background-color: #f9f9f9;
             padding: 0.75rem;
@@ -177,10 +174,9 @@
         <h2 style="margin-top: 2rem;">My Profile</h2>
 
         <div class="profile-container">
-            <!-- Sidebar -->
             <div class="profile-sidebar">
                 <div class="profile-card">
-                    <div class="profile-picture" id="profilePic">👤</div>
+                    <div class="profile-picture" id="profilePic">U</div>
                     <div class="profile-name" id="profileName">Loading...</div>
                     <div class="profile-college" id="profileCollege">-</div>
                     <div class="profile-rating" id="profileRating">★★★★★</div>
@@ -200,18 +196,16 @@
                 </div>
             </div>
 
-            <!-- Main Content -->
             <div class="profile-content">
                 <div class="tabs">
-                    <button class="tab-button active" onclick="switchTab('about')">About</button>
-                    <button class="tab-button" onclick="switchTab('settings')">Settings</button>
-                    <button class="tab-button" onclick="switchTab('security')">Security</button>
+                    <button class="tab-button active" onclick="switchTab('about', this)">About</button>
+                    <button class="tab-button" onclick="switchTab('settings', this)">Settings</button>
+                    <button class="tab-button" onclick="switchTab('security', this)">Security</button>
                 </div>
 
-                <!-- About Tab -->
                 <div id="about" class="tab-content active">
                     <h3>Personal Information</h3>
-                    
+
                     <div class="form-row">
                         <div class="form-group">
                             <label>First Name</label>
@@ -242,10 +236,9 @@
                     </div>
                 </div>
 
-                <!-- Settings Tab -->
                 <div id="settings" class="tab-content">
                     <h3>Profile Settings</h3>
-                    
+
                     <form id="settingsForm">
                         <div class="form-group">
                             <label for="bio">Bio</label>
@@ -261,38 +254,12 @@
                     </form>
                 </div>
 
-                <!-- Security Tab -->
                 <div id="security" class="tab-content">
                     <h3>Security Settings</h3>
-                    
+
                     <div class="card">
                         <div class="card-header">Change Password</div>
-                        <form id="passwordForm">
-                            <div class="form-group">
-                                <label for="currentPassword">Current Password</label>
-                                <input type="password" id="currentPassword" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="newPassword">New Password</label>
-                                <input type="password" id="newPassword" required>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="confirmPassword">Confirm Password</label>
-                                <input type="password" id="confirmPassword" required>
-                            </div>
-
-                            <button type="button" class="btn-save" onclick="changePassword()" style="background-color: #f39c12;">Update Password</button>
-                        </form>
-                    </div>
-
-                    <div class="card" style="margin-top: 1.5rem; border: 2px solid #e74c3c;">
-                        <div class="card-header" style="color: #e74c3c;">Danger Zone</div>
-                        <p style="color: #666; margin-top: 1rem;">
-                            Deleting your account will permanently remove all your data and cannot be undone.
-                        </p>
-                        <button type="button" class="btn-logout" style="margin-top: 0;" onclick="deleteAccount()">Delete Account</button>
+                        <p style="margin-top: 1rem; color: #666;">Password change is not available yet in this build.</p>
                     </div>
                 </div>
             </div>
@@ -307,112 +274,68 @@
                 return;
             }
 
+            document.getElementById('settingsForm').addEventListener('submit', updateProfile);
             await loadProfile();
         });
 
         async function loadProfile() {
             try {
                 const profile = await API.get('/users/profile');
-                
-                // Populate profile info
-                document.getElementById('profileName').textContent = profile.firstName + ' ' + profile.lastName;
+                document.getElementById('profileName').textContent = `${profile.firstName} ${profile.lastName}`;
                 document.getElementById('profileCollege').textContent = profile.college;
                 document.getElementById('firstName').textContent = profile.firstName;
                 document.getElementById('lastName').textContent = profile.lastName;
                 document.getElementById('email').textContent = profile.email;
                 document.getElementById('college').textContent = profile.college;
                 document.getElementById('contactNumber').textContent = profile.contactNumber || 'Not provided';
-                
-                // Rating
-                const rating = Math.round(profile.averageRating || 0);
-                const stars = '★'.repeat(rating) + '☆'.repeat(5 - rating);
-                document.getElementById('profileRating').innerHTML = `${stars} <span style="font-size: 0.9rem; color: #666;">(${profile.totalReviews} reviews)</span>`;
-                
-                // Stats
                 document.getElementById('reviewCount').textContent = profile.totalReviews || 0;
-                
-                // Bio and profile picture
                 document.getElementById('bio').value = profile.bio || '';
                 document.getElementById('profilePictureUrl').value = profile.profilePictureUrl || '';
-                
-                // Profile picture initial
+
+                const rating = Math.round(profile.averageRating || 0);
+                document.getElementById('profileRating').innerHTML = `${'★'.repeat(rating)}${'☆'.repeat(5 - rating)} <span style="font-size: 0.9rem; color: #666;">(${profile.totalReviews} reviews)</span>`;
+
+                const profilePic = document.getElementById('profilePic');
                 if (profile.profilePictureUrl) {
-                    document.getElementById('profilePic').style.backgroundImage = `url('${profile.profilePictureUrl}')`;
-                    document.getElementById('profilePic').textContent = '';
+                    profilePic.style.backgroundImage = `url('${profile.profilePictureUrl}')`;
+                    profilePic.textContent = '';
                 } else {
-                    document.getElementById('profilePic').textContent = profile.firstName.charAt(0).toUpperCase();
+                    profilePic.style.backgroundImage = 'none';
+                    profilePic.textContent = profile.firstName.charAt(0).toUpperCase();
                 }
             } catch (error) {
-                UI.showAlert('Failed to load profile', 'error');
+                UI.showAlert(error.message || 'Failed to load profile', 'error');
                 console.error(error);
             }
         }
 
-        function switchTab(tabName) {
-            // Hide all tabs
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-            
-            // Show selected tab
+        function switchTab(tabName, button) {
+            document.querySelectorAll('.tab-content').forEach((tab) => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-button').forEach((tabButton) => tabButton.classList.remove('active'));
             document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            if (button) {
+                button.classList.add('active');
+            }
         }
 
-        document.getElementById('settingsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        async function updateProfile(event) {
+            event.preventDefault();
 
             try {
-                const bio = document.getElementById('bio').value;
-                const profilePictureUrl = document.getElementById('profilePictureUrl').value;
-
                 await API.put('/users/profile', {
-                    bio,
-                    profilePictureUrl
+                    bio: document.getElementById('bio').value,
+                    profilePictureUrl: document.getElementById('profilePictureUrl').value
                 });
-
                 UI.showAlert('Profile updated successfully!', 'success');
                 await loadProfile();
             } catch (error) {
-                UI.showAlert('Failed to update profile', 'error');
+                UI.showAlert(error.message || 'Failed to update profile', 'error');
                 console.error(error);
-            }
-        });
-
-        function changePassword() {
-            const newPassword = document.getElementById('newPassword').value;
-            const confirmPassword = document.getElementById('confirmPassword').value;
-
-            if (newPassword !== confirmPassword) {
-                UI.showAlert('Passwords do not match', 'error');
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                UI.showAlert('Password must be at least 6 characters', 'error');
-                return;
-            }
-
-            // Note: This would require a backend endpoint to change password
-            UI.showAlert('Password change not yet implemented. Please contact support.', 'error');
-        }
-
-        function deleteAccount() {
-            const confirmed = confirm('Are you sure? This action cannot be undone. Type DELETE to confirm.');
-            if (!confirmed) return;
-
-            const input = prompt('Type DELETE to confirm account deletion:');
-            if (input === 'DELETE') {
-                // Note: This would require a backend endpoint to delete account
-                UI.showAlert('Account deletion not yet implemented. Please contact support.', 'error');
-            } else {
-                UI.showAlert('Account deletion cancelled', 'error');
             }
         }
 
         function logout() {
-            if (confirm('Are you sure you want to logout?')) {
-                Auth.logout();
-            }
+            Auth.logout();
         }
     </script>
 </body>

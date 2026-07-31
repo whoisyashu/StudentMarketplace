@@ -16,9 +16,12 @@ const TokenManager = {
 const API = {
     request: async (endpoint, options = {}) => {
         const headers = {
-            'Content-Type': 'application/json',
             ...options.headers
         };
+
+        if (options.body !== undefined && !headers['Content-Type']) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         const token = TokenManager.getToken();
         if (token) {
@@ -31,16 +34,27 @@ const API = {
                 headers
             });
 
+            const contentType = response.headers.get('content-type') || '';
+            const payload = response.status === 204
+                ? null
+                : contentType.includes('application/json')
+                    ? await response.json()
+                    : await response.text();
+
             if (!response.ok) {
                 if (response.status === 401) {
                     TokenManager.clearToken();
                     TokenManager.clearUserId();
                     window.location.href = '/pages/login.html';
                 }
-                throw new Error(`API Error: ${response.status}`);
+
+                const errorMessage = typeof payload === 'object' && payload !== null
+                    ? payload.message || payload.error || `API Error: ${response.status}`
+                    : payload || `API Error: ${response.status}`;
+                throw new Error(errorMessage);
             }
 
-            return await response.json();
+            return payload;
         } catch (error) {
             console.error('API Request Error:', error);
             throw error;
@@ -59,10 +73,10 @@ const UI = {
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type}`;
         alertDiv.textContent = message;
-        
+
         const container = document.querySelector('.container') || document.body;
         container.insertBefore(alertDiv, container.firstChild);
-        
+
         setTimeout(() => alertDiv.remove(), 3000);
     },
 
@@ -83,11 +97,11 @@ const Auth = {
             if (response.token) {
                 TokenManager.setToken(response.token);
                 TokenManager.setUserId(response.userId);
-                UI.showAlert('Login successful!', 'success');
+                UI.showAlert(response.message || 'Login successful!', 'success');
                 UI.redirectTo('/');
             }
         } catch (error) {
-            UI.showAlert('Login failed', 'error');
+            UI.showAlert(error.message || 'Login failed', 'error');
             throw error;
         }
     },
@@ -98,11 +112,11 @@ const Auth = {
             if (response.token) {
                 TokenManager.setToken(response.token);
                 TokenManager.setUserId(response.userId);
-                UI.showAlert('Registration successful!', 'success');
+                UI.showAlert(response.message || 'Registration successful!', 'success');
                 UI.redirectTo('/');
             }
         } catch (error) {
-            UI.showAlert('Registration failed', 'error');
+            UI.showAlert(error.message || 'Registration failed', 'error');
             throw error;
         }
     },
@@ -114,11 +128,10 @@ const Auth = {
     }
 };
 
-// Check authentication on page load
 document.addEventListener('DOMContentLoaded', () => {
     const isAuthenticated = TokenManager.isAuthenticated();
     const authButtons = document.querySelector('.auth-buttons');
-    
+
     if (authButtons) {
         if (isAuthenticated) {
             authButtons.innerHTML = `

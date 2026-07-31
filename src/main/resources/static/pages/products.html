@@ -32,6 +32,7 @@
             display: flex;
             gap: 1rem;
             margin-bottom: 2rem;
+            flex-wrap: wrap;
         }
         .tab-btn {
             padding: 0.75rem 1.5rem;
@@ -116,6 +117,7 @@
             display: flex;
             gap: 0.5rem;
             margin-top: 1rem;
+            flex-wrap: wrap;
         }
         .action-btn {
             padding: 0.5rem 1rem;
@@ -151,11 +153,6 @@
             text-align: center;
             padding: 3rem;
             color: #999;
-        }
-        .empty-state img {
-            width: 100px;
-            opacity: 0.5;
-            margin-bottom: 1rem;
         }
         .empty-state p {
             font-size: 1.1rem;
@@ -196,9 +193,9 @@
         </div>
 
         <div class="listings-tabs">
-            <button class="tab-btn active" onclick="filterListings('available')">Active (0)</button>
-            <button class="tab-btn" onclick="filterListings('sold')">Sold (0)</button>
-            <button class="tab-btn" onclick="filterListings('all')">All (0)</button>
+            <button class="tab-btn active" onclick="filterListings('available', this)">Active (0)</button>
+            <button class="tab-btn" onclick="filterListings('sold', this)">Sold (0)</button>
+            <button class="tab-btn" onclick="filterListings('all', this)">All (0)</button>
         </div>
 
         <div id="listingsContainer">
@@ -212,6 +209,10 @@
     <script>
         let allListings = [];
         let currentFilter = 'available';
+
+        function formatCurrency(value) {
+            return `Rs ${Number(value || 0).toFixed(2)}`;
+        }
 
         document.addEventListener('DOMContentLoaded', async () => {
             if (!TokenManager.isAuthenticated()) {
@@ -229,41 +230,40 @@
                 updateCounts();
                 renderListings();
             } catch (error) {
-                UI.showAlert('Failed to load listings', 'error');
+                UI.showAlert(error.message || 'Failed to load listings', 'error');
                 console.error(error);
             }
         }
 
         function updateCounts() {
-            const availableCount = allListings.filter(p => p.status === 'available').length;
-            const soldCount = allListings.filter(p => p.status === 'sold').length;
-            
-            document.querySelector('button[onclick="filterListings(\'available\')"]').textContent = `Active (${availableCount})`;
-            document.querySelector('button[onclick="filterListings(\'sold\')"]').textContent = `Sold (${soldCount})`;
-            document.querySelector('button[onclick="filterListings(\'all\')"]').textContent = `All (${allListings.length})`;
+            const availableCount = allListings.filter((product) => product.status === 'available').length;
+            const soldCount = allListings.filter((product) => product.status === 'sold').length;
+
+            document.querySelector('button[onclick="filterListings(\'available\', this)"]').textContent = `Active (${availableCount})`;
+            document.querySelector('button[onclick="filterListings(\'sold\', this)"]').textContent = `Sold (${soldCount})`;
+            document.querySelector('button[onclick="filterListings(\'all\', this)"]').textContent = `All (${allListings.length})`;
         }
 
-        function filterListings(filter) {
+        function filterListings(filter, button) {
             currentFilter = filter;
-            
-            // Update active tab
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
+            document.querySelectorAll('.tab-btn').forEach((tabButton) => tabButton.classList.remove('active'));
+            if (button) {
+                button.classList.add('active');
+            }
             renderListings();
         }
 
         function renderListings() {
             let filtered = allListings;
-            
+
             if (currentFilter === 'available') {
-                filtered = allListings.filter(p => p.status === 'available');
+                filtered = allListings.filter((product) => product.status === 'available');
             } else if (currentFilter === 'sold') {
-                filtered = allListings.filter(p => p.status === 'sold');
+                filtered = allListings.filter((product) => product.status === 'sold');
             }
 
             const container = document.getElementById('listingsContainer');
-            
+
             if (filtered.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -274,16 +274,16 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(product => `
+            container.innerHTML = filtered.map((product) => `
                 <div class="listing-item">
                     <img src="${product.imageUrls?.[0] || 'https://via.placeholder.com/150x150?text=No+Image'}" alt="${product.title}" class="listing-image">
                     <div class="listing-info">
                         <div class="listing-title">${product.title}</div>
-                        
+
                         <div class="listing-meta">
                             <div class="meta-item">
                                 <span class="meta-label">Price</span>
-                                <span class="meta-value">₹${product.price.toFixed(2)}</span>
+                                <span class="meta-value">${formatCurrency(product.price)}</span>
                             </div>
                             <div class="meta-item">
                                 <span class="meta-label">Category</span>
@@ -320,33 +320,36 @@
             `).join('');
         }
 
-        function editListing(productId) {
-            // TODO: Implement edit functionality
+        function editListing() {
             UI.showAlert('Edit feature coming soon!', 'error');
         }
 
         async function markAsSold(productId) {
-            if (!confirm('Mark this product as sold?')) return;
+            if (!confirm('Mark this product as sold?')) {
+                return;
+            }
 
             try {
                 await API.put(`/products/${productId}/sold`, {});
                 UI.showAlert('Product marked as sold!', 'success');
                 await loadListings();
             } catch (error) {
-                UI.showAlert('Failed to mark as sold', 'error');
+                UI.showAlert(error.message || 'Failed to mark as sold', 'error');
                 console.error(error);
             }
         }
 
         async function deleteListing(productId) {
-            if (!confirm('Delete this listing? This action cannot be undone.')) return;
+            if (!confirm('Delete this listing? This action cannot be undone.')) {
+                return;
+            }
 
             try {
                 await API.delete(`/products/${productId}`);
                 UI.showAlert('Listing deleted!', 'success');
                 await loadListings();
             } catch (error) {
-                UI.showAlert('Failed to delete listing', 'error');
+                UI.showAlert(error.message || 'Failed to delete listing', 'error');
                 console.error(error);
             }
         }

@@ -3,6 +3,7 @@ package com.example.studentmarketplace.util;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 import javax.crypto.SecretKey;
 
@@ -14,8 +15,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
-
-// changes
 
 @Component
 public class JwtUtil {
@@ -31,14 +30,14 @@ public class JwtUtil {
         if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
             throw new IllegalStateException("jwt.secret must be configured");
         }
-        byte[] secretBytes = jwtSecret.getBytes();
+        byte[] secretBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
         if (secretBytes.length < 32) {
             throw new IllegalStateException("jwt.secret must be at least 32 bytes for HS256");
         }
     }
 
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(jwtSecret.getBytes());
+        return Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
     public String generateToken(String userId) {
@@ -96,4 +95,3 @@ public class JwtUtil {
         }
     }
 }
-// this is jwt util file which is used to generate and validate jwt tokens for authentication and authorization in the application. It uses the jjwt library to handle JWT operations. The secret key and expiration time are configured through application properties.

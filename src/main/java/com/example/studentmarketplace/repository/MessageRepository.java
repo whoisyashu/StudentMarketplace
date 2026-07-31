@@ -10,9 +10,6 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends MongoRepository<Message, String> {
     
-    @Query("{ 'conversationId': ?0 }")
-    List<Message> findByConversationId(String conversationId);
-    
-    @Query("{ 'conversationId': ?0 }")
-    List<Message> findByConversationIdSorted(String conversationId);
+    @Query(value = "{ 'conversationId': ?0 }", sort = "{ 'sentAt': 1 }")
+    List<Message> findByConversationIdOrderBySentAtAsc(String conversationId);
 }

@@ -7,7 +7,6 @@ import com.example.studentmarketplace.exception.ResourceNotFoundException;
 import com.example.studentmarketplace.exception.UnauthorizedException;
 import com.example.studentmarketplace.repository.ProductRepository;
 import com.example.studentmarketplace.repository.ReviewRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -18,28 +17,29 @@ import java.util.List;
 @Service
 public class ProductService {
 
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
+    private final ReviewRepository reviewRepository;
+    private final UserService userService;
 
-    @Autowired
-    private ReviewRepository reviewRepository;
-
-    @Autowired
-    private UserService userService;
+    public ProductService(ProductRepository productRepository, ReviewRepository reviewRepository, UserService userService) {
+        this.productRepository = productRepository;
+        this.reviewRepository = reviewRepository;
+        this.userService = userService;
+    }
 
     public Product createProduct(String sellerId, ProductRequest request) {
         Product product = Product.builder()
                 .sellerId(sellerId)
-                .title(request.getTitle())
-                .description(request.getDescription())
+                .title(request.getTitle().trim())
+                .description(request.getDescription().trim())
                 .price(request.getPrice())
-                .category(request.getCategory())
+                .category(request.getCategory().trim())
                 .imageUrls(request.getImageUrls())
-                .condition(request.getCondition())
-                .location(request.getLocation())
+                .condition(request.getCondition().trim())
+                .location(request.getLocation().trim())
                 .status("available")
                 .negotiable(request.isNegotiable())
-                .tags(request.getTags())
+                .tags(request.getTags() != null ? request.getTags().trim() : null)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .views(0)
@@ -50,8 +50,7 @@ public class ProductService {
     }
 
     public Product getProductById(String id) {
-        Product product = productRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
+        Product product = findExistingProduct(id);
         // Increment views
         product.setViews(product.getViews() + 1);
         productRepository.save(product);
@@ -59,28 +58,28 @@ public class ProductService {
     }
 
     public Product updateProduct(String productId, String userId, ProductRequest request) {
-        Product product = getProductById(productId);
+        Product product = findExistingProduct(productId);
         
         if (!product.getSellerId().equals(userId)) {
             throw new UnauthorizedException("You can only edit your own products");
         }
 
-        product.setTitle(request.getTitle());
-        product.setDescription(request.getDescription());
+        product.setTitle(request.getTitle().trim());
+        product.setDescription(request.getDescription().trim());
         product.setPrice(request.getPrice());
-        product.setCategory(request.getCategory());
+        product.setCategory(request.getCategory().trim());
         product.setImageUrls(request.getImageUrls());
-        product.setCondition(request.getCondition());
-        product.setLocation(request.getLocation());
+        product.setCondition(request.getCondition().trim());
+        product.setLocation(request.getLocation().trim());
         product.setNegotiable(request.isNegotiable());
-        product.setTags(request.getTags());
+        product.setTags(request.getTags() != null ? request.getTags().trim() : null);
         product.setUpdatedAt(LocalDateTime.now());
 
         return productRepository.save(product);
     }
 
     public void deleteProduct(String productId, String userId) {
-        Product product = getProductById(productId);
+        Product product = findExistingProduct(productId);
         
         if (!product.getSellerId().equals(userId)) {
             throw new UnauthorizedException("You can only delete your own products");
@@ -110,7 +109,7 @@ public class ProductService {
     }
 
     public void markAsSold(String productId, String userId) {
-        Product product = getProductById(productId);
+        Product product = findExistingProduct(productId);
         
         if (!product.getSellerId().equals(userId)) {
             throw new UnauthorizedException("You can only mark your own products as sold");
@@ -146,5 +145,10 @@ public class ProductService {
                 .sellerId(product.getSellerId())
                 .sellerRating(avgRating)
                 .build();
+    }
+
+    private Product findExistingProduct(String id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Product not found"));
     }
 }

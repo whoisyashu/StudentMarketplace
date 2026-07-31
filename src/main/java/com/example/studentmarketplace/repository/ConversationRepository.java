@@ -11,8 +11,8 @@ import java.util.Optional;
 @Repository
 public interface ConversationRepository extends MongoRepository<Conversation, String> {
     
-    @Query("{ $or: [ { 'userId1': ?0 }, { 'userId2': ?0 } ] }")
-    List<Conversation> findByUserId(String userId);
+    @Query(value = "{ $or: [ { 'userId1': ?0 }, { 'userId2': ?0 } ] }", sort = "{ 'updatedAt': -1 }")
+    List<Conversation> findByUserIdOrderByUpdatedAtDesc(String userId);
     
     @Query("{ $or: [ { $and: [ { 'userId1': ?0 }, { 'userId2': ?1 } ] }, { $and: [ { 'userId1': ?1 }, { 'userId2': ?0 } ] } ] }")
     Optional<Conversation> findConversationBetween(String userId1, String userId2);
